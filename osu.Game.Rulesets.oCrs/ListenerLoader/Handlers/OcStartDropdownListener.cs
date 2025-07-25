@@ -222,8 +222,6 @@ public partial class OcStartDropdownListener : AbstractHandler
             {
                 void goToProfile(int challengersId)
                 {
-                    // Game.HandleLink($"https://osu-challenge-tracker.vercel.app/profile/{challengersId}");
-
                     var screenStack = Game.GetScreenStack();
                     var user = api?.LocalUser.Value;
                     Debug.Assert(user is not null);
@@ -266,7 +264,7 @@ public partial class OcStartDropdownListener : AbstractHandler
 
             Action = () =>
             {
-                Game.HandleLink("https://osu-challenge-tracker.vercel.app/");
+                Game.HandleLink("https://www.challengersnexus.com/");
                 overlay.Hide();
             }
         };
