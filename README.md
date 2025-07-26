@@ -1,6 +1,6 @@
 # osu-challengers-ruleset
 
-A osu!lazer custom ruleset that integrates quick access to osu!Challengers playlists and stats directly into the game.
+An osu!lazer custom ruleset that integrates quick access to osu!Challengers playlists and stats directly into the game.
 
 ## Install
 
