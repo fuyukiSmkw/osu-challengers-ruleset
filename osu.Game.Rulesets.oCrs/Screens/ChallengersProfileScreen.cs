@@ -10,6 +10,7 @@ using osu.Game.Online.API;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Rulesets.oCrs.Extensions;
 using osu.Game.Rulesets.oCrs.Online.Rpcs;
+using osu.Game.Rulesets.oCrs.Screens.ChallengersProfile;
 using osu.Game.Rulesets.oCrs.Screens.ChallengersProfile.Components;
 using osu.Game.Rulesets.UI;
 using osu.Game.Screens;
@@ -17,7 +18,7 @@ using osuTK;
 
 #nullable enable
 
-namespace osu.Game.Rulesets.oCrs.Screens.ChallengersProfile;
+namespace osu.Game.Rulesets.oCrs.Screens;
 
 public partial class ChallengersProfileScreen : oCrsScreen
 {
