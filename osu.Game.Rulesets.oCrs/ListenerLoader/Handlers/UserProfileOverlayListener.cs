@@ -231,6 +231,56 @@ public partial class UserProfileOverlayListener : AbstractHandler
             Schedule(waitAndReplace);
             return;
         }
+        // chatOverlay: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("chatOverlay") is not ChatOverlay chatOverlay)
+        {
+            Logging.Log("UserProfileOverlayListener: chatOverlay nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // news: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("news") is not NewsOverlay news)
+        {
+            Logging.Log("UserProfileOverlayListener: news nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // dashboard: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("dashboard") is not DashboardOverlay dashboard)
+        {
+            Logging.Log("UserProfileOverlayListener: dashboard nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // beatmapListing: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("beatmapListing") is not BeatmapListingOverlay beatmapListing)
+        {
+            Logging.Log("UserProfileOverlayListener: beatmapListing nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // changelogOverlay: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("changelogOverlay") is not ChangelogOverlay changelogOverlay)
+        {
+            Logging.Log("UserProfileOverlayListener: changelogOverlay nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // rankingsOverlay: featuring in singleDisplayOverlays
+        // dep cache
+        if (getFromCache<RankingsOverlay>(Game.Dependencies as DependencyContainer ?? null!) is not RankingsOverlay rankingsOverlay)
+        {
+            Logging.Log("UserProfileOverlayListener: rankingsOverlay nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // wikiOverlay: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("wikiOverlay") is not WikiOverlay wikiOverlay)
+        {
+            Logging.Log("UserProfileOverlayListener: wikiOverlay nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
 
         Logging.Log("UserProfileOverlayListener: nothing nulls, start injecting HackedUserProfileOverlay");
 
@@ -245,6 +295,19 @@ public partial class UserProfileOverlayListener : AbstractHandler
             if (state.NewValue != Visibility.Hidden)
                 showOverlayAboveOthers([hacked, informationalOverlays]);
         };
+        var singleDisplayOverlays = new OverlayContainer[] { chatOverlay, news, dashboard, beatmapListing, changelogOverlay, rankingsOverlay, wikiOverlay };
+        foreach (var overlay in singleDisplayOverlays)
+        {
+            overlay.State.ValueChanged += state =>
+            {
+                // informational overlays should be dismissed on a show or hide of a full overlay.
+                // informationalOverlays.ForEach(o => o.Hide());
+                hacked.Hide();
+
+                if (state.NewValue != Visibility.Hidden)
+                    showOverlayAboveOthers([overlay, singleDisplayOverlays]);
+            };
+        }
 
         original.Expire();
         overlayContent.Remove(original, true);
@@ -263,6 +326,13 @@ public partial class UserProfileOverlayListener : AbstractHandler
         replaceOrCacheAs<UserProfileOverlay>(Game.Dependencies as DependencyContainer ?? null!, hacked);
 
         Logging.Log("Successfully injected HackedUserProfileOverlay!");
+    }
+
+    private static object? getFromCache<T>(DependencyContainer container)
+        where T : class
+    {
+        var cached = container.FindInstance("cache") as Dictionary<CacheInfo, object> ?? null!;
+        return cached.FirstOrDefault(c => (c.Key.FindInstance("Type") as Type)! == typeof(T)).Value;
     }
 
     // Copyright (c) cdwcgt cdwcgt@cdwcgt.top>. Licensed under the MIT License.
