@@ -11,7 +11,6 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Overlays;
 using osu.Game.Overlays.Profile;
-using osu.Game.Overlays.Profile.Header;
 using osu.Game.Overlays.Settings;
 using osu.Game.Rulesets.oCrs.Extensions;
 using osu.Game.Rulesets.oCrs.ListenerLoader.Utils;
@@ -61,28 +60,28 @@ public partial class UserProfileOverlayListener : AbstractHandler
         }
     }
 
-    public partial class HackedTopHeaderContainer : TopHeaderContainer
+    // NOTE: HACK!!!! Please keep up to date with lazer code
+    public partial class HackedProfileHeader : ProfileHeader
     {
         [Resolved]
         private OsuGame game { get; set; } = null!;
+        protected OsuGame Game => game;
 
         [Resolved]
         private HackedUserProfileOverlay userProfileOverlay { get; set; } = null!;
 
-        protected OsuGame Game => game;
-
         private GetUserIdFromOsuId? request;
         private MyButton button = null!;
 
-        protected override void LoadComplete()
+        public HackedProfileHeader()
         {
-            base.LoadComplete();
-            var flow = this.FindInstance("flow") as FillFlowContainer ?? null!;
-            flow.Add(button = new MyButton("Go to osu!Challengers profile")
+            TabControlContainer.Add(button = new MyButton("Go to osu!Challengers profile")
             {
                 Anchor = Anchor.CentreLeft,
                 Origin = Anchor.CentreLeft,
-                Width = 0.4f,
+                Width = 0.3f,
+                Height = 30,
+                X = 30,
                 Action = () =>
                 {
                     void goToProfile(int challengersId)
@@ -94,7 +93,7 @@ public partial class UserProfileOverlayListener : AbstractHandler
                     }
 
                     request?.Abort();
-                    request = new(User?.Value?.User.Id ?? 0);
+                    request = new(User.Value?.User.Id ?? 0);
                     request.Finished += () => Schedule(() =>
                     {
                         int? cid = request.ResponseObject;
@@ -113,59 +112,6 @@ public partial class UserProfileOverlayListener : AbstractHandler
                     request.PerformAsync();
                 }
             });
-        }
-    }
-
-    // NOTE: HACK!!!! Please keep up to date with lazer code
-    public partial class HackedProfileHeader : ProfileHeader
-    {
-        protected override Drawable CreateContent()
-        {
-            var detailHeaderContainerField = this.FindFieldInstance("detailHeaderContainer");
-            var centreHeaderContainerField = this.FindFieldInstance("centreHeaderContainer");
-            DetailHeaderContainer detailHeaderContainer = new DetailHeaderContainer
-            {
-                RelativeSizeAxes = Axes.X,
-                User = { BindTarget = User },
-            };
-            CentreHeaderContainer centreHeaderContainer = new CentreHeaderContainer
-            {
-                RelativeSizeAxes = Axes.X,
-                User = { BindTarget = User },
-            };
-            detailHeaderContainerField?.SetValue(this, detailHeaderContainer);
-            centreHeaderContainerField?.SetValue(this, centreHeaderContainer);
-
-            return new FillFlowContainer
-            {
-                RelativeSizeAxes = Axes.X,
-                AutoSizeAxes = Axes.Y,
-                Direction = FillDirection.Vertical,
-                Children =
-                [
-                    new HackedTopHeaderContainer
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        User = { BindTarget = User },
-                    },
-                    new BannerHeaderContainer
-                    {
-                        User = { BindTarget = User },
-                    },
-                    new BadgeHeaderContainer
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        User = { BindTarget = User },
-                    },
-                    detailHeaderContainer,
-                    centreHeaderContainer,
-                    new BottomHeaderContainer
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        User = { BindTarget = User },
-                    },
-                ]
-            };
         }
     }
 
