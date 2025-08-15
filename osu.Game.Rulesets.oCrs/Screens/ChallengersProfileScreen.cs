@@ -10,6 +10,7 @@ using osu.Game.Online.API;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Rulesets.oCrs.Extensions;
 using osu.Game.Rulesets.oCrs.Online.Rpcs;
+using osu.Game.Rulesets.oCrs.Screens.ChallengersProfile;
 using osu.Game.Rulesets.oCrs.Screens.ChallengersProfile.Components;
 using osu.Game.Rulesets.UI;
 using osu.Game.Screens;
@@ -17,7 +18,7 @@ using osuTK;
 
 #nullable enable
 
-namespace osu.Game.Rulesets.oCrs.Screens.ChallengersProfile;
+namespace osu.Game.Rulesets.oCrs.Screens;
 
 public partial class ChallengersProfileScreen : oCrsScreen
 {
@@ -54,23 +55,45 @@ public partial class ChallengersProfileScreen : oCrsScreen
                 new BasicScrollContainer
                 {
                     RelativeSizeAxes = Axes.Both,
-                    Child = contentContainer = new FillFlowContainer
+                    Child = new FillFlowContainer
                     {
                         RelativeSizeAxes = Axes.X,
                         AutoSizeAxes = Axes.Y,
                         Anchor = Anchor.TopCentre,
                         Origin = Anchor.TopCentre,
+                        Direction = FillDirection.Vertical,
                         Width = 0.8f,
                         Padding = new MarginPadding { Top = 40 },
                         Spacing = new Vector2(0, 16),
                         Children =
                         [
                             topHeader = new SimpleUserHeaderContainer(user, challengersId),
-                            userStatsContainer = new UserStatsContainer(),
+                            new Container
+                            {
+                                RelativeSizeAxes = Axes.X,
+                                AutoSizeAxes = Axes.Y,
+                                Children =
+                                [
+                                    contentContainer = new FillFlowContainer
+                                    {
+                                        RelativeSizeAxes = Axes.X,
+                                        AutoSizeAxes = Axes.Y,
+                                        Anchor = Anchor.TopCentre,
+                                        Origin = Anchor.TopCentre,
+                                        Direction = FillDirection.Vertical,
+                                        Padding = new MarginPadding { Top = 40 },
+                                        Spacing = new Vector2(0, 16),
+                                        Children =
+                                        [
+                                            userStatsContainer = new UserStatsContainer(),
+                                        ],
+                                    },
+                                    loadingLayer = new LoadingLayer(true),
+                                ],
+                            },
                         ],
                     },
                 },
-                loadingLayer = new LoadingLayer(true),
             ],
         };
     }
@@ -83,17 +106,26 @@ public partial class ChallengersProfileScreen : oCrsScreen
 
     private GetUserStats? userStatsRequest;
     private GetSeasonalLeaderboardWithUser? seasonalLeaderboardRequest;
+    private GetCurrentSeasonId? seasonIdRequest;
 
     private async void fetchAndSetContent()
     {
         loadingLayer.Show();
 
+        seasonIdRequest?.Abort();
         userStatsRequest?.Abort();
+        seasonalLeaderboardRequest?.Abort();
+
+        seasonIdRequest = new();
+        seasonIdRequest.Finished += () => stats.seasonId = seasonIdRequest.ResponseObject ?? 0;
+
         userStatsRequest = new(challengersId);
         userStatsRequest.Finished += () => stats.userStats = userStatsRequest.ResponseObject[0];
 
-        seasonalLeaderboardRequest?.Abort();
-        seasonalLeaderboardRequest = new(challengersId);
+        await seasonIdRequest.AwaitRequest();
+        await userStatsRequest.AwaitRequest();
+
+        seasonalLeaderboardRequest = new(challengersId, stats.seasonId);
         seasonalLeaderboardRequest.Finished += () =>
         {
             foreach (var item in seasonalLeaderboardRequest.ResponseObject)
@@ -106,7 +138,6 @@ public partial class ChallengersProfileScreen : oCrsScreen
             }
         };
 
-        await userStatsRequest.AwaitRequest();
         await seasonalLeaderboardRequest.AwaitRequest();
 
         userStatsContainer.updateStats(stats);

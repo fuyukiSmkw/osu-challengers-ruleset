@@ -11,12 +11,11 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Overlays;
 using osu.Game.Overlays.Profile;
-using osu.Game.Overlays.Profile.Header;
 using osu.Game.Overlays.Settings;
 using osu.Game.Rulesets.oCrs.Extensions;
 using osu.Game.Rulesets.oCrs.ListenerLoader.Utils;
 using osu.Game.Rulesets.oCrs.Online.Rpcs;
-using osu.Game.Rulesets.oCrs.Screens.ChallengersProfile;
+using osu.Game.Rulesets.oCrs.Screens;
 
 namespace osu.Game.Rulesets.oCrs.ListenerLoader.Handlers;
 
@@ -61,28 +60,28 @@ public partial class UserProfileOverlayListener : AbstractHandler
         }
     }
 
-    public partial class HackedTopHeaderContainer : TopHeaderContainer
+    // NOTE: HACK!!!! Please keep up to date with lazer code
+    public partial class HackedProfileHeader : ProfileHeader
     {
         [Resolved]
         private OsuGame game { get; set; } = null!;
+        protected OsuGame Game => game;
 
         [Resolved]
         private HackedUserProfileOverlay userProfileOverlay { get; set; } = null!;
 
-        protected OsuGame Game => game;
-
         private GetUserIdFromOsuId? request;
         private MyButton button = null!;
 
-        protected override void LoadComplete()
+        public HackedProfileHeader()
         {
-            base.LoadComplete();
-            var flow = this.FindInstance("flow") as FillFlowContainer ?? null!;
-            flow.Add(button = new MyButton("Go to osu!Challengers profile")
+            TabControlContainer.Add(button = new MyButton("Go to osu!Challengers profile")
             {
                 Anchor = Anchor.CentreLeft,
                 Origin = Anchor.CentreLeft,
-                Width = 0.4f,
+                Width = 0.3f,
+                Height = 30,
+                X = 30,
                 Action = () =>
                 {
                     void goToProfile(int challengersId)
@@ -94,7 +93,7 @@ public partial class UserProfileOverlayListener : AbstractHandler
                     }
 
                     request?.Abort();
-                    request = new(User?.Value?.User.Id ?? 0);
+                    request = new(User.Value?.User.Id ?? 0);
                     request.Finished += () => Schedule(() =>
                     {
                         int? cid = request.ResponseObject;
@@ -113,59 +112,6 @@ public partial class UserProfileOverlayListener : AbstractHandler
                     request.PerformAsync();
                 }
             });
-        }
-    }
-
-    // NOTE: HACK!!!! Please keep up to date with lazer code
-    public partial class HackedProfileHeader : ProfileHeader
-    {
-        protected override Drawable CreateContent()
-        {
-            var detailHeaderContainerField = this.FindFieldInstance("detailHeaderContainer");
-            var centreHeaderContainerField = this.FindFieldInstance("centreHeaderContainer");
-            DetailHeaderContainer detailHeaderContainer = new DetailHeaderContainer
-            {
-                RelativeSizeAxes = Axes.X,
-                User = { BindTarget = User },
-            };
-            CentreHeaderContainer centreHeaderContainer = new CentreHeaderContainer
-            {
-                RelativeSizeAxes = Axes.X,
-                User = { BindTarget = User },
-            };
-            detailHeaderContainerField?.SetValue(this, detailHeaderContainer);
-            centreHeaderContainerField?.SetValue(this, centreHeaderContainer);
-
-            return new FillFlowContainer
-            {
-                RelativeSizeAxes = Axes.X,
-                AutoSizeAxes = Axes.Y,
-                Direction = FillDirection.Vertical,
-                Children =
-                [
-                    new HackedTopHeaderContainer
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        User = { BindTarget = User },
-                    },
-                    new BannerHeaderContainer
-                    {
-                        User = { BindTarget = User },
-                    },
-                    new BadgeHeaderContainer
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        User = { BindTarget = User },
-                    },
-                    detailHeaderContainer,
-                    centreHeaderContainer,
-                    new BottomHeaderContainer
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        User = { BindTarget = User },
-                    },
-                ]
-            };
         }
     }
 
@@ -231,6 +177,56 @@ public partial class UserProfileOverlayListener : AbstractHandler
             Schedule(waitAndReplace);
             return;
         }
+        // chatOverlay: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("chatOverlay") is not ChatOverlay chatOverlay)
+        {
+            Logging.Log("UserProfileOverlayListener: chatOverlay nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // news: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("news") is not NewsOverlay news)
+        {
+            Logging.Log("UserProfileOverlayListener: news nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // dashboard: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("dashboard") is not DashboardOverlay dashboard)
+        {
+            Logging.Log("UserProfileOverlayListener: dashboard nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // beatmapListing: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("beatmapListing") is not BeatmapListingOverlay beatmapListing)
+        {
+            Logging.Log("UserProfileOverlayListener: beatmapListing nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // changelogOverlay: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("changelogOverlay") is not ChangelogOverlay changelogOverlay)
+        {
+            Logging.Log("UserProfileOverlayListener: changelogOverlay nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // rankingsOverlay: featuring in singleDisplayOverlays
+        // dep cache
+        if (getFromCache<RankingsOverlay>(Game.Dependencies as DependencyContainer ?? null!) is not RankingsOverlay rankingsOverlay)
+        {
+            Logging.Log("UserProfileOverlayListener: rankingsOverlay nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
+        // wikiOverlay: private member of OsuGame, featuring in singleDisplayOverlays
+        if (Game.FindInstance("wikiOverlay") is not WikiOverlay wikiOverlay)
+        {
+            Logging.Log("UserProfileOverlayListener: wikiOverlay nulls, bye");
+            Schedule(waitAndReplace);
+            return;
+        }
 
         Logging.Log("UserProfileOverlayListener: nothing nulls, start injecting HackedUserProfileOverlay");
 
@@ -245,6 +241,19 @@ public partial class UserProfileOverlayListener : AbstractHandler
             if (state.NewValue != Visibility.Hidden)
                 showOverlayAboveOthers([hacked, informationalOverlays]);
         };
+        var singleDisplayOverlays = new OverlayContainer[] { chatOverlay, news, dashboard, beatmapListing, changelogOverlay, rankingsOverlay, wikiOverlay };
+        foreach (var overlay in singleDisplayOverlays)
+        {
+            overlay.State.ValueChanged += state =>
+            {
+                // informational overlays should be dismissed on a show or hide of a full overlay.
+                // informationalOverlays.ForEach(o => o.Hide());
+                hacked.Hide();
+
+                if (state.NewValue != Visibility.Hidden)
+                    showOverlayAboveOthers([overlay, singleDisplayOverlays]);
+            };
+        }
 
         original.Expire();
         overlayContent.Remove(original, true);
@@ -263,6 +272,13 @@ public partial class UserProfileOverlayListener : AbstractHandler
         replaceOrCacheAs<UserProfileOverlay>(Game.Dependencies as DependencyContainer ?? null!, hacked);
 
         Logging.Log("Successfully injected HackedUserProfileOverlay!");
+    }
+
+    private static object? getFromCache<T>(DependencyContainer container)
+        where T : class
+    {
+        var cached = container.FindInstance("cache") as Dictionary<CacheInfo, object> ?? null!;
+        return cached.FirstOrDefault(c => (c.Key.FindInstance("Type") as Type)! == typeof(T)).Value;
     }
 
     // Copyright (c) cdwcgt cdwcgt@cdwcgt.top>. Licensed under the MIT License.

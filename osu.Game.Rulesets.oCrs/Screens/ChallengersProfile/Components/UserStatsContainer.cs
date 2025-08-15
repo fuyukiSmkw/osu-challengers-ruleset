@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Linq;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Graphics;
@@ -12,10 +11,9 @@ namespace osu.Game.Rulesets.oCrs.Screens.ChallengersProfile.Components;
 
 public partial class UserStatsContainer : CompositeDrawable
 {
-    private const float content_height = 65;
-    private const float vertical_padding = 10;
-
     private FillFlowContainer contentContainer;
+
+    private OsuSpriteText avgAccValueText, seasonalRankValueText, percentileValueText, participationValueText, totalScoreValueText;
 
     public UserStatsContainer()
     {
@@ -37,6 +35,14 @@ public partial class UserStatsContainer : CompositeDrawable
                         Direction = FillDirection.Horizontal,
                         // Spacing = new Vector2(20, 0),
                         Padding = new MarginPadding { Horizontal = 10 },
+                        Children =
+                        [
+                            createItem("Average Accuracy", "-", out avgAccValueText, 1f/5),
+                            createItem("Seasonal Rank", "-", out seasonalRankValueText, 1f/5),
+                            createItem("Top", "-", out percentileValueText, 1f/5),
+                            createItem("Participation", "-", out participationValueText, 1f/5),
+                            createItem("Total Score", "-", out totalScoreValueText, 1f/5),
+                        ],
                     }
                 ],
             },
@@ -45,26 +51,24 @@ public partial class UserStatsContainer : CompositeDrawable
 
     public void updateStats(ChallengersProfileStats stats)
     {
-        (string, string)[] items;
         try
         {
-            items =
-            [
-                ("Average Accuracy", $"{Math.Round(stats.userStats.averageAccuracy ?? 0, 2)}%"),
-                ("Seasonal Rank", $"#{stats.seasonalStats.position}"),
-                ("Percentile", $"{stats.seasonalStats.percentile}%"),
-                ("Participation", $"{stats.seasonalStats.challengesParticipated}"),
-                ("Total Score", $"{stats.userStats.totalScores}"),
-            ];
+            avgAccValueText.Text = $"{Math.Round(stats.userStats.averageAccuracy ?? 0, 2)}%";
+            seasonalRankValueText.Text = $"#{stats.seasonalStats.position}";
+            percentileValueText.Text = $"{Math.Round(100 - stats.seasonalStats.percentile ?? 0, 2)}%";
+            participationValueText.Text = $"{stats.seasonalStats.challengesParticipated}";
+            totalScoreValueText.Text = $"{stats.userStats.totalScores}";
         }
         catch (Exception)
         {
-            items = [("No stats in this season!", "Play some osu!Challengers!")];
+            contentContainer.Children =
+            [
+                createItem("No stats in this season!", "Play some osu!Challengers!", out _, 1f),
+            ];
         }
-        contentContainer.Children = [.. items.Select(i => createItem(i.Item1, i.Item2, 1f / items.Length))];
     }
 
-    private static Drawable createItem(string name, string value, float relativeWidth) => new FillFlowContainer
+    private static FillFlowContainer createItem(string name, string value, out OsuSpriteText refToValue, float relativeWidth) => new()
     {
         Direction = FillDirection.Vertical,
         AutoSizeAxes = Axes.Y,
@@ -82,7 +86,7 @@ public partial class UserStatsContainer : CompositeDrawable
                 Origin = Anchor.TopCentre,
                 Padding = new MarginPadding { Top = 5, Bottom = 2 },
             },
-            new OsuSpriteText
+            refToValue = new OsuSpriteText
             {
                 Text = value,
                 Font = OsuFont.GetFont(size: 16),

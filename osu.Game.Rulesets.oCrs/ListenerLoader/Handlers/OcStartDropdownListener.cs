@@ -20,7 +20,7 @@ using osu.Game.Rulesets.oCrs.Extensions;
 using osu.Game.Rulesets.oCrs.Graphics;
 using osu.Game.Rulesets.oCrs.ListenerLoader.Utils;
 using osu.Game.Rulesets.oCrs.Online.Rpcs;
-using osu.Game.Rulesets.oCrs.Screens.ChallengersProfile;
+using osu.Game.Rulesets.oCrs.Screens;
 using osu.Game.Screens.Menu;
 using osu.Game.Screens.OnlinePlay.Lounge;
 using osu.Game.Screens.OnlinePlay.Playlists;
