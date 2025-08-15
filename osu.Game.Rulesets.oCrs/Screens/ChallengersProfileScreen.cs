@@ -55,23 +55,45 @@ public partial class ChallengersProfileScreen : oCrsScreen
                 new BasicScrollContainer
                 {
                     RelativeSizeAxes = Axes.Both,
-                    Child = contentContainer = new FillFlowContainer
+                    Child = new FillFlowContainer
                     {
                         RelativeSizeAxes = Axes.X,
                         AutoSizeAxes = Axes.Y,
                         Anchor = Anchor.TopCentre,
                         Origin = Anchor.TopCentre,
+                        Direction = FillDirection.Vertical,
                         Width = 0.8f,
                         Padding = new MarginPadding { Top = 40 },
                         Spacing = new Vector2(0, 16),
                         Children =
                         [
                             topHeader = new SimpleUserHeaderContainer(user, challengersId),
-                            userStatsContainer = new UserStatsContainer(),
+                            new Container
+                            {
+                                RelativeSizeAxes = Axes.X,
+                                AutoSizeAxes = Axes.Y,
+                                Children =
+                                [
+                                    contentContainer = new FillFlowContainer
+                                    {
+                                        RelativeSizeAxes = Axes.X,
+                                        AutoSizeAxes = Axes.Y,
+                                        Anchor = Anchor.TopCentre,
+                                        Origin = Anchor.TopCentre,
+                                        Direction = FillDirection.Vertical,
+                                        Padding = new MarginPadding { Top = 40 },
+                                        Spacing = new Vector2(0, 16),
+                                        Children =
+                                        [
+                                            userStatsContainer = new UserStatsContainer(),
+                                        ],
+                                    },
+                                    loadingLayer = new LoadingLayer(true),
+                                ],
+                            },
                         ],
                     },
                 },
-                loadingLayer = new LoadingLayer(true),
             ],
         };
     }
