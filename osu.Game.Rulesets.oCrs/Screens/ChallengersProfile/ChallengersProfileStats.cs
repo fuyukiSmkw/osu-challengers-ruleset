@@ -9,4 +9,5 @@ public struct ChallengersProfileStats
 {
     public UserStats userStats;
     public SeasonalLeaderboardItem seasonalStats;
+    public int seasonId;
 }

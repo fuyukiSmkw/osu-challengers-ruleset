@@ -84,17 +84,26 @@ public partial class ChallengersProfileScreen : oCrsScreen
 
     private GetUserStats? userStatsRequest;
     private GetSeasonalLeaderboardWithUser? seasonalLeaderboardRequest;
+    private GetCurrentSeasonId? seasonIdRequest;
 
     private async void fetchAndSetContent()
     {
         loadingLayer.Show();
 
+        seasonIdRequest?.Abort();
         userStatsRequest?.Abort();
+        seasonalLeaderboardRequest?.Abort();
+
+        seasonIdRequest = new();
+        seasonIdRequest.Finished += () => stats.seasonId = seasonIdRequest.ResponseObject ?? 0;
+
         userStatsRequest = new(challengersId);
         userStatsRequest.Finished += () => stats.userStats = userStatsRequest.ResponseObject[0];
 
-        seasonalLeaderboardRequest?.Abort();
-        seasonalLeaderboardRequest = new(challengersId);
+        await seasonIdRequest.AwaitRequest();
+        await userStatsRequest.AwaitRequest();
+
+        seasonalLeaderboardRequest = new(challengersId, stats.seasonId);
         seasonalLeaderboardRequest.Finished += () =>
         {
             foreach (var item in seasonalLeaderboardRequest.ResponseObject)
@@ -107,7 +116,6 @@ public partial class ChallengersProfileScreen : oCrsScreen
             }
         };
 
-        await userStatsRequest.AwaitRequest();
         await seasonalLeaderboardRequest.AwaitRequest();
 
         userStatsContainer.updateStats(stats);

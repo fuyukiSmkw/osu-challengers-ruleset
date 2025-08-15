@@ -12,9 +12,6 @@ namespace osu.Game.Rulesets.oCrs.Screens.ChallengersProfile.Components;
 
 public partial class UserStatsContainer : CompositeDrawable
 {
-    private const float content_height = 65;
-    private const float vertical_padding = 10;
-
     private FillFlowContainer contentContainer;
 
     public UserStatsContainer()
@@ -64,7 +61,7 @@ public partial class UserStatsContainer : CompositeDrawable
         contentContainer.Children = [.. items.Select(i => createItem(i.Item1, i.Item2, 1f / items.Length))];
     }
 
-    private static Drawable createItem(string name, string value, float relativeWidth) => new FillFlowContainer
+    private static FillFlowContainer createItem(string name, string value, float relativeWidth) => new()
     {
         Direction = FillDirection.Vertical,
         AutoSizeAxes = Axes.Y,

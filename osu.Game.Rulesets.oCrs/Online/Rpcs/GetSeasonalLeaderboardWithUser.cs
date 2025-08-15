@@ -42,13 +42,13 @@ public class SeasonalLeaderboardItem
 
 public class GetSeasonalLeaderboardWithUser : CallRpc<SeasonalLeaderboardItem[]>
 {
-    public GetSeasonalLeaderboardWithUser(int challengersId)
+    public GetSeasonalLeaderboardWithUser(int challengersId, int seasonId)
     : base("get_season_leaderboard_with_user")
     {
-        AddRaw($"{{\"user_id_param\":{challengersId}, \"season_id_param\": 1}}"); // TODO
+        AddRaw($"{{\"user_id_param\":{challengersId}, \"season_id_param\": {seasonId}}}"); // TODO
         Failed += (e) =>
         {
-            Logging.LogError(e, $"Error requesting GetSeasonalLeaderboardWithUser, challengersId is {challengersId}");
+            Logging.LogError(e, $"Error requesting GetSeasonalLeaderboardWithUser, challengersId is {challengersId}, seasonId is {seasonId}");
         };
     }
 }
