@@ -214,7 +214,7 @@ public partial class UserProfileOverlayListener : AbstractHandler
         }
         // rankingsOverlay: featuring in singleDisplayOverlays
         // dep cache
-        if (getFromCache<RankingsOverlay>(Game.Dependencies as DependencyContainer ?? null!) is not RankingsOverlay rankingsOverlay)
+        if ((Game.Dependencies as DependencyContainer)!.getFromCache<RankingsOverlay>() is not RankingsOverlay rankingsOverlay)
         {
             Logging.Log("UserProfileOverlayListener: rankingsOverlay nulls, bye");
             Schedule(waitAndReplace);
@@ -268,34 +268,10 @@ public partial class UserProfileOverlayListener : AbstractHandler
         userProfileOverlayField?.SetValue(Game, hacked);
 
         // (Game.Dependencies as DependencyContainer)?.Cache(hacked);
-        replaceOrCacheAs<HackedUserProfileOverlay>(Game.Dependencies as DependencyContainer ?? null!, hacked);
-        replaceOrCacheAs<UserProfileOverlay>(Game.Dependencies as DependencyContainer ?? null!, hacked);
+        (Game.Dependencies as DependencyContainer)!.replaceOrCacheAs<HackedUserProfileOverlay>(hacked);
+        (Game.Dependencies as DependencyContainer)!.replaceOrCacheAs<UserProfileOverlay>(hacked);
 
         Logging.Log("Successfully injected HackedUserProfileOverlay!");
-    }
-
-    private static object? getFromCache<T>(DependencyContainer container)
-        where T : class
-    {
-        var cached = container.FindInstance("cache") as Dictionary<CacheInfo, object> ?? null!;
-        return cached.FirstOrDefault(c => (c.Key.FindInstance("Type") as Type)! == typeof(T)).Value;
-    }
-
-    // Copyright (c) cdwcgt cdwcgt@cdwcgt.top>. Licensed under the MIT License.
-    private static void replaceOrCacheAs<T>(DependencyContainer container, T replacement)
-        where T : class
-    {
-        var cached = container.FindInstance("cache") as Dictionary<CacheInfo, object> ?? null!;
-
-        var cacheInfo = cached.FirstOrDefault(c => (c.Key.FindInstance("Type") as Type)! == typeof(T)).Key;
-
-        if (cacheInfo.Equals(new CacheInfo()))
-        {
-            container.CacheAs<T>(replacement);
-            return;
-        }
-
-        cached[cacheInfo] = replacement;
     }
 
 }
