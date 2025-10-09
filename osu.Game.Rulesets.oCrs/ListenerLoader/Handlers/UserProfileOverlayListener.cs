@@ -4,7 +4,6 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -12,10 +11,8 @@ using osu.Framework.Graphics.Containers;
 using osu.Game.Overlays;
 using osu.Game.Overlays.Profile;
 using osu.Game.Overlays.Settings;
-using osu.Game.Rulesets.oCrs.Extensions;
 using osu.Game.Rulesets.oCrs.ListenerLoader.Utils;
 using osu.Game.Rulesets.oCrs.Online.Rpcs;
-using osu.Game.Rulesets.oCrs.Screens;
 
 namespace osu.Game.Rulesets.oCrs.ListenerLoader.Handlers;
 
@@ -86,8 +83,12 @@ public partial class UserProfileOverlayListener : AbstractHandler
                 {
                     void goToProfile(int challengersId)
                     {
+                        /* profile screen; temporarily disabled until development is completed
                         var screenStack = Game.GetScreenStack();
                         screenStack?.Push(new ChallengersProfileScreen(User?.Value?.User ?? null!, challengersId));
+                        */
+                        Game.HandleLink($"https://www.challengersnexus.com/profile/{challengersId}");
+
                         userProfileOverlay.Hide();
                         button.ok();
                     }

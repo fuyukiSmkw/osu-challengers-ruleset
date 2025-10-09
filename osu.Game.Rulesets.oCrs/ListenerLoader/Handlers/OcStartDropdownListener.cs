@@ -3,7 +3,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -16,11 +15,9 @@ using osu.Game.Beatmaps;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Online.API;
 using osu.Game.Overlays.Settings;
-using osu.Game.Rulesets.oCrs.Extensions;
 using osu.Game.Rulesets.oCrs.Graphics;
 using osu.Game.Rulesets.oCrs.ListenerLoader.Utils;
 using osu.Game.Rulesets.oCrs.Online.Rpcs;
-using osu.Game.Rulesets.oCrs.Screens;
 using osu.Game.Screens.Menu;
 using osu.Game.Screens.OnlinePlay.Lounge;
 using osu.Game.Screens.OnlinePlay.Playlists;
@@ -222,10 +219,14 @@ public partial class OcStartDropdownListener : AbstractHandler
             {
                 void goToProfile(int challengersId)
                 {
+                    // profile screen; temporarily disabled
+                    /*
                     var screenStack = Game.GetScreenStack();
-                    var user = api?.LocalUser.Value;
-                    Debug.Assert(user is not null);
+                    var user = api?.LocalUser.Value ?? null!;
                     screenStack?.Push(new ChallengersProfileScreen(user, challengersId));
+                    */
+                    // go to website
+                    Game.HandleLink($"https://www.challengersnexus.com/profile/{challengersId}");
 
                     overlay.Hide();
                     profileButton?.ok();
