@@ -139,7 +139,7 @@ public partial class OcStartDropdownListener : AbstractHandler
         }
     }
 
-    private partial class HackedPlaylists : Playlists
+    public partial class HackedPlaylists : Playlists
     {
         protected override LoungeSubScreen CreateLounge() => new HackedPlaylistsLoungeSubScreen();
     }

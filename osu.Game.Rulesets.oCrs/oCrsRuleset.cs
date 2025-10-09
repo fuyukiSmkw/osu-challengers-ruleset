@@ -19,6 +19,13 @@ using osu.Game.Online.API;
 using osu.Framework.Platform;
 using osu.Framework.Logging;
 using osu.Game.Rulesets.oCrs.Graphics;
+using osu.Game.Overlays.Settings;
+using osu.Game.Rulesets.Configuration;
+using osu.Game.Configuration;
+using osu.Game.Rulesets.oCrs.Configuration;
+using osu.Game.Rulesets.oCrs.ListenerLoader.Utils;
+
+#nullable enable
 
 namespace osu.Game.Rulesets.oCrs
 {
@@ -28,7 +35,7 @@ namespace osu.Game.Rulesets.oCrs
 
         public static string Version => "2025.1009.0";
 
-        public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod> mods = null) =>
+        public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod>? mods = null) =>
             new DrawableoCrsRuleset(this, beatmap, mods);
 
         public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) =>
@@ -68,17 +75,31 @@ namespace osu.Game.Rulesets.oCrs
                     Logging.Log("Begin init ListenerLoader");
                     Logging.Log($"Deps: Game = '{game}' :: Storage = '{storage}' :: Importer = '{beatmapImporter}' :: IAPIProvider = '{api}'");
 
-                    if (ListenerLoader.ListenerLoader.INSTANCE.BeginInject(storage, game, Scheduler))
+                    if (!ListenerLoader.ListenerLoader.INSTANCE.BeginInject(storage, game, Scheduler))
+                    {
+                        Logging.Log("Injection failed!", level: LogLevel.Error);
                         return;
+                    }
 
-                    Logging.Log("Injection failed!", level: LogLevel.Error);
-                    return;
+                    Logging.Log("register oCrsRulesetConfigManager to game.Dependencies");
+                    (game.Dependencies as DependencyContainer)!.replaceOrCacheAs(configManager!);
                 }
                 catch (Exception e)
                 {
                     Logging.LogError(e, "Unknown exception");
                 }
             }
+        }
+
+        public override RulesetSettingsSubsection CreateSettings() => new oCrsSettingsSubsection(this);
+
+        private static oCrsRulesetConfigManager? configManager = null;
+
+        public override IRulesetConfigManager CreateConfig(SettingsStore? settings)
+        {
+            Logging.Log("CreateConfig called");
+            configManager = new oCrsRulesetConfigManager(settings, RulesetInfo);
+            return configManager;
         }
 
         // Leave this line intact. It will bake the correct version into the ruleset on each build/release.
