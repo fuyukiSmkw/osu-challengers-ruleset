@@ -6,23 +6,19 @@
 using System;
 using System.Collections.Generic;
 using osu.Framework.Graphics;
-using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input.Bindings;
 using osu.Game.Beatmaps;
-using osu.Game.Graphics;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.oCrs.Beatmaps;
 using osu.Game.Rulesets.oCrs.UI;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.UI;
-using osuTK;
-using osuTK.Graphics;
 using osu.Framework.Allocation;
 using osu.Game.Database;
 using osu.Game.Online.API;
 using osu.Framework.Platform;
 using osu.Framework.Logging;
+using osu.Game.Rulesets.oCrs.Graphics;
 
 namespace osu.Game.Rulesets.oCrs
 {
@@ -53,33 +49,13 @@ namespace osu.Game.Rulesets.oCrs
 
         public override IEnumerable<KeyBinding> GetDefaultKeyBindings(int variant = 0) => [];
 
-        public override Drawable CreateIcon() => new OCIcon();
+        public override Drawable CreateIcon() => new OcIconWithListenerLoader();
 
-        public partial class OCIcon : CompositeDrawable
+        public partial class OcIconWithListenerLoader : OcIcon
         {
-            public OCIcon()
+            public OcIconWithListenerLoader()
             {
                 AutoSizeAxes = Axes.Both;
-                InternalChildren =
-                [
-                    new SpriteIcon
-                    {
-                        Anchor = Anchor.Centre,
-                        Origin = Anchor.Centre,
-                        Scale = new Vector2(20f),
-                        Icon = FontAwesome.Regular.Circle,
-                        Colour = Color4.White,
-                    },
-                    new SpriteText
-                    {
-                        Anchor = Anchor.Centre,
-                        Origin = Anchor.Centre,
-                        Y = -0.5f,
-                        Text = "o!C",
-                        Font = OsuFont.Torus.With(size: 10, weight: FontWeight.SemiBold),
-                        Colour = Color4.White,
-                    }
-                ];
             }
 
             [BackgroundDependencyLoader(permitNulls: true)]
