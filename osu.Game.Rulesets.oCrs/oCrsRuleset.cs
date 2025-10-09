@@ -26,6 +26,8 @@ namespace osu.Game.Rulesets.oCrs
     {
         public override string Description => "osu!Challengers";
 
+        public static string Version => "2025.1009.0";
+
         public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod> mods = null) =>
             new DrawableoCrsRuleset(this, beatmap, mods);
 
