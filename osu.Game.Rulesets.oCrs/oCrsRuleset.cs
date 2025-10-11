@@ -6,23 +6,26 @@
 using System;
 using System.Collections.Generic;
 using osu.Framework.Graphics;
-using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input.Bindings;
 using osu.Game.Beatmaps;
-using osu.Game.Graphics;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.oCrs.Beatmaps;
 using osu.Game.Rulesets.oCrs.UI;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.UI;
-using osuTK;
-using osuTK.Graphics;
 using osu.Framework.Allocation;
 using osu.Game.Database;
 using osu.Game.Online.API;
 using osu.Framework.Platform;
 using osu.Framework.Logging;
+using osu.Game.Rulesets.oCrs.Graphics;
+using osu.Game.Overlays.Settings;
+using osu.Game.Rulesets.Configuration;
+using osu.Game.Configuration;
+using osu.Game.Rulesets.oCrs.Configuration;
+using osu.Game.Rulesets.oCrs.ListenerLoader.Utils;
+
+#nullable enable
 
 namespace osu.Game.Rulesets.oCrs
 {
@@ -30,7 +33,9 @@ namespace osu.Game.Rulesets.oCrs
     {
         public override string Description => "osu!Challengers";
 
-        public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod> mods = null) =>
+        public static string Version => "2025.1009.0";
+
+        public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod>? mods = null) =>
             new DrawableoCrsRuleset(this, beatmap, mods);
 
         public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) =>
@@ -53,33 +58,13 @@ namespace osu.Game.Rulesets.oCrs
 
         public override IEnumerable<KeyBinding> GetDefaultKeyBindings(int variant = 0) => [];
 
-        public override Drawable CreateIcon() => new OCIcon();
+        public override Drawable CreateIcon() => new OcIconWithListenerLoader();
 
-        public partial class OCIcon : CompositeDrawable
+        public partial class OcIconWithListenerLoader : OcIcon
         {
-            public OCIcon()
+            public OcIconWithListenerLoader()
             {
                 AutoSizeAxes = Axes.Both;
-                InternalChildren =
-                [
-                    new SpriteIcon
-                    {
-                        Anchor = Anchor.Centre,
-                        Origin = Anchor.Centre,
-                        Scale = new Vector2(20f),
-                        Icon = FontAwesome.Regular.Circle,
-                        Colour = Color4.White,
-                    },
-                    new SpriteText
-                    {
-                        Anchor = Anchor.Centre,
-                        Origin = Anchor.Centre,
-                        Y = -0.5f,
-                        Text = "o!C",
-                        Font = OsuFont.Torus.With(size: 10, weight: FontWeight.SemiBold),
-                        Colour = Color4.White,
-                    }
-                ];
             }
 
             [BackgroundDependencyLoader(permitNulls: true)]
@@ -90,17 +75,31 @@ namespace osu.Game.Rulesets.oCrs
                     Logging.Log("Begin init ListenerLoader");
                     Logging.Log($"Deps: Game = '{game}' :: Storage = '{storage}' :: Importer = '{beatmapImporter}' :: IAPIProvider = '{api}'");
 
-                    if (ListenerLoader.ListenerLoader.INSTANCE.BeginInject(storage, game, Scheduler))
+                    if (!ListenerLoader.ListenerLoader.INSTANCE.BeginInject(storage, game, Scheduler))
+                    {
+                        Logging.Log("Injection failed!", level: LogLevel.Error);
                         return;
+                    }
 
-                    Logging.Log("Injection failed!", level: LogLevel.Error);
-                    return;
+                    Logging.Log("register oCrsRulesetConfigManager to game.Dependencies");
+                    (game.Dependencies as DependencyContainer)!.replaceOrCacheAs(configManager!);
                 }
                 catch (Exception e)
                 {
                     Logging.LogError(e, "Unknown exception");
                 }
             }
+        }
+
+        public override RulesetSettingsSubsection CreateSettings() => new oCrsSettingsSubsection(this);
+
+        private static oCrsRulesetConfigManager? configManager = null;
+
+        public override IRulesetConfigManager CreateConfig(SettingsStore? settings)
+        {
+            Logging.Log("CreateConfig called");
+            configManager = new oCrsRulesetConfigManager(settings, RulesetInfo);
+            return configManager;
         }
 
         // Leave this line intact. It will bake the correct version into the ruleset on each build/release.
