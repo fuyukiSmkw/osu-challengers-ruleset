@@ -42,7 +42,7 @@ public partial class NewPlaylistNotificationListener : AbstractHandler
     #region notifications
 
     // weekly: only keep the word after "Best" (mod challenge)
-    [GeneratedRegex(@"Best\s+(\w+)(?:.*)", RegexOptions.IgnoreCase, "")]
+    [GeneratedRegex(@"Best\s+(.*?)\s*Score", RegexOptions.IgnoreCase, "")]
     private static partial Regex RegexWeekly();
     private const string template_weekly = "osu!Challengers Weekly now live!\nMod Challenge: {0}";
 
