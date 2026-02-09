@@ -36,6 +36,7 @@ public partial class ListenerLoader : AbstractHandler
             new OcStartDropdownListener(),
             new UserProfileOverlayListener(),
             new NewPlaylistNotificationListener(),
+            new NewVersionNotificationListener(),
         ];
     }
 
